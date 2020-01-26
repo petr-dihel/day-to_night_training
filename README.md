@@ -1,4 +1,4 @@
-# day-to_night_training
+# day_to_night_prepare
 Script preapres pairs day-night from videos by location
 
 ## Parameters
