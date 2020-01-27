@@ -22,6 +22,8 @@ failed_strings, list of done video_filenames, count of successful frames and fai
 - create a b-tree from file
 - than creates a list of paires 
 - find oppoiste pair by calculated opposity unique_key
+- todo preapre data set from each pair for learning
+
 
 ## Results
 
