@@ -9,6 +9,7 @@ Script preapres pairs day-night from videos by location
 - each row is one image and his location unique key:message
 - unique_key -  md5(N/D(DAY/Night) : True/False (is_front) : east_cord :  norh_cord : index_at_one_gps
 - log_message = md5(N/D(DAY/Night) : True/False (is_front) : east_cord :  norh_cord : index_at_one_gps : frame
+- ef19617ef5e3ffea14985c61c3ffbdaf:N:True:49.86012777777778:18.294175000000003:1:project0.mp4:3
 
 ## log_info.txt
 failed_strings, list of done video_filenames, count of successful frames and failed
@@ -19,7 +20,5 @@ failed_strings, list of done video_filenames, count of successful frames and fai
 - find oppoiste pair by calculated opposity unique_key
 
 ## Results
-- 
-
 
                                
