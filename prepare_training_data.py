@@ -11,6 +11,8 @@ from threading import Lock
 
 MAX_THREADS = 14
 
+mapping = [('\"', '”'), ('/', ''), ('H', ''), (",", "."), (" ", ""), ("I", "1"), ("L", "1"), ("l", "1"), ("O", "0"),
+           ("£", "1"),  ("Y", ""),  ("J", "")]
 
 def get_cropped_image(img, start_x, start_y, end_x=0, end_y=0):
     width, height, channels = img.shape
@@ -52,8 +54,6 @@ def get_gps_location(img, is_front_view):
         end_x = 1350
     cropped_frame = get_cropped_image(img, start_x, 1010, end_x, 1060)
     black_and_white_image = get_black_and_white_image(cropped_frame)
-    mapping = [('\"', '”'), ('/', ''), ('H', ''), (",", "."), (" ", ""), ("I", "1"), ("L", "1"), ("l", "1"), ("O", "0"),
-               ("£", "1")]
     gps_location_string = pytesseract.image_to_string(black_and_white_image, lang='eng', config='--psm 7 --oem 3')
     gps_location_string = get_mapped_string(gps_location_string, mapping)
     return gps_location_string
@@ -67,7 +67,7 @@ def is_day_from_image(image):
     hours = int(hours)
     minutes = int(minutes)
     #CASE january
-    if (hours > 7 and hours < 15) or (hours == 6 and minutes < 30) or (hours == 15 and minutes < 30):
+    if (hours > 7 and hours < 15) or (hours == 6 and minutes > 30) or (hours == 15 and minutes < 30):
         return True
     return False
 
@@ -138,7 +138,6 @@ class PrepareTrainingData:
             if os.path.isdir(self.path_to_video + "/" + file):
                 self.directories_with_videos.append(file)
         for dict in self.directories_with_videos:
-            print(dict)
             if dictionary_limit != '' and dictionary_limit != dict:
                 continue
             videos = fnmatch.filter(os.listdir(self.path_to_video + "/" + dict), '*.mp4')
@@ -157,8 +156,20 @@ class PrepareTrainingData:
     def get_degree_from_gps_string(self, gps_string):
         parts = re.findall(r"[0-9]*\.?[0-9]*", gps_string)
         parts = list(filter(None, parts))
-        n_degree = float(parts[0]) + float(parts[1]) / 60 + float(parts[2]) / 3600
-        e_degree = float(parts[3]) + float(parts[4]) / 60 + float(parts[5]) / 3600
+        if (len(parts) < 6):
+            parts.insert(0, 49)
+        try:
+            n_degree = float(parts[0]) + float(parts[1]) / 60 + float(parts[2]) / 3600
+            # probably did not read first number, hotfix
+            if n_degree < 10:
+                n_degree = 49 + float(parts[1]) / 60 + float(parts[2]) / 3600
+            e_degree = float(parts[3]) + float(parts[4]) / 60 + float(parts[5]) / 3600
+            if n_degree < 10:
+                e_degree = 18 + float(parts[1]) / 60 + float(parts[2]) / 3600
+        except Exception as ex:
+            print(ex)
+            print(gps_string)
+            print(parts)
         return str(n_degree) + ":" + str(e_degree)
 
     def update_progress(self, progress, time_remaining, over_all_remaining_frames, over_all_time_remaining):
@@ -246,7 +257,6 @@ class PrepareTrainingData:
                         for gps_location, images_by_location in dic_of_gps.items():
                             index_at_one_gps = 0
                             for frame_index, image in images_by_location.items():
-                                print("Dasda")
                                 log_message = day_time_string + ":" + str(is_front_view) + ":" + gps_location \
                                               + ":" + str(index_at_one_gps) + ":" + file_name + ":" + str(frame_index)
                                 unique_key = hashlib.md5((str(day_time_string) + ":" + str(is_front_view) + ":" + str(
@@ -278,7 +288,6 @@ class PrepareTrainingData:
         new_gps_location_string = get_gps_location(frame_copy, is_front_view)
         regular = r"N?[0-9]*\.?[0-9]*°[0-9]*\.?[0-9]*[’|”][0-9]*\.?[0-9]*”E[0-9]*\.?[0-9]*°[0-9]*\.?[0-9]*[’|”][" \
                   r"0-9]*\.?[0-9]*”"
-        print(new_gps_location_string)
         if re.search(regular, new_gps_location_string):
             gps_degree = self.get_degree_from_gps_string(new_gps_location_string)
             self.lock.acquire()
@@ -292,7 +301,6 @@ class PrepareTrainingData:
                 dic_of_gps[gps_degree] = img_list
             self.lock.release()
         else:
-            print('ADFasasd')
             self.lock.acquire()
             self.failed_count += 1
             self.failed_strings.append(new_gps_location_string)
