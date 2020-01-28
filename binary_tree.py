@@ -129,12 +129,17 @@ class BinaryTree:
                 is_day = (is_day == 'D')
                 north = float(north)
                 east = float(east)
+                if east > 100:
+                    east -= 100
+                if east > 20:
+                    continue
                 video_file_name = str(video_file_name)
                 video_frame_index = int(frame_index)
                 # line do nothing just to debug
                 new_node = TreeNode(hash_value, is_day, north, east, gps_index, video_file_name, is_front, video_frame_index)
                 self.insertNode(new_node)
-                update_progress(count_total, current_count)
+                if current_count % 10000 == 0:
+                    update_progress(count_total, current_count)
 
     def getNodeByHashValue(self, hash_value):
         return self.internalgetNodeByHashValue(self.root, hash_value)
@@ -176,9 +181,8 @@ class BinaryTree:
             print(str(tabs) + "-R-", end='')
             self.internal_print(node.right, tabs + 1, True)
 
-video_files_name = load_saved_data()
-a = get_input_video_file_name(video_files_name, "project0.mp4")
-print(a)
+#video_files_name = load_saved_data()
+
 binary_tree = BinaryTree()
 file = r"C:\Users\Petr\Desktop\prepare_training_data\output\test\log_gps.txt"
 print("Loading from file {0}".format(file))
@@ -212,9 +216,10 @@ for node in binary_tree.nodes:
             newPairedImage.node_night = node
         pairedImages.append(newPairedImage)
         #break
-    update_progress(len(binary_tree.nodes), current_count)
+    if current_count % 10000 == 0 :
+        update_progress(len(binary_tree.nodes), current_count)
 print("Prepared paired images to training : " + str(len(pairedImages)))
-
+print("Nodes : " + str(current_count))
 
 def hconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
     h_min = min(im.shape[0] for im in im_list)
@@ -222,14 +227,16 @@ def hconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
                       for im in im_list]
     return cv2.hconcat(im_list_resize)
 
+if len(pairedImages) == 0:
+    sys.end()
 
 test = pairedImages[0]
-index = 1
+index = 168
 saved = 0
 failedGps = 0
 frameNoneError = 0
 
-while saved < 20:
+while saved < 50:
     test = pairedImages[index]
     while float(test.node_day.east) < 10 or float(test.node_day.north) < 10:
         index += 1
@@ -241,7 +248,7 @@ while saved < 20:
     path_to_video = r"G:\car_videos\output"
     path_to_video = r"G:\car_videos\input\CARDV_20181212"
 
-    video_file_name_1 = get_input_video_file_name(video_files_name, test.node_day.videoFileName)
+    video_file_name_1 = test.node_day.videoFileName
     current_video_stream = cv2.VideoCapture(path_to_video + '/' + video_file_name_1)
     current_video_stream.set(1, test.node_day.video_frame_index)
     frame = current_video_stream.read()
@@ -253,7 +260,7 @@ while saved < 20:
 
     # cv2.imshow("Test1", frame[1])
 
-    video_file_name_2 = get_input_video_file_name(video_files_name, test.node_night.videoFileName)
+    video_file_name_2 = test.node_night.videoFileName
     current_video_stream = cv2.VideoCapture(path_to_video + '/' + video_file_name_2)
     current_video_stream.set(1, test.node_night.video_frame_index)
     frame2 = current_video_stream.read()
@@ -269,10 +276,12 @@ while saved < 20:
     cv2.imwrite(img_path + image_name, result_im)
     #cv2.imwrite(img_path + "Test2.png", frame2[1])
 
-    print("Day : Is day {0} is Front : {1} videoFileName {2} real {3}".format(test.node_day.isDay, test.node_day.isFrontView, test.node_day.videoFileName, video_file_name_1))
-    print("Night : Is day {0} is Front : {1} videoFileName {2} real {3}".format(test.node_night.isDay, test.node_night.isFrontView, test.node_night.videoFileName, video_file_name_2))
+    print("Day : Is day {0} is Front : {1} videoFileName {2} east: {3} north: {4}"
+          .format(test.node_day.isDay, test.node_day.isFrontView, test.node_day.videoFileName, test.node_day.east, test.node_day.north))
+    print("Night : Is day {0} is Front : {1} videoFileName {2} east: {3} north: {4}"
+          .format(test.node_night.isDay, test.node_night.isFrontView, test.node_night.videoFileName, test.node_night.east, test.node_night.north))
     print(index)
-    index += int(len(pairedImages)/50)
+    index += int((len(pairedImages)/51))
     saved += 1
 print("failedGps{0}".format(failedGps))
 print("frameNoneError{0}".format(frameNoneError))
@@ -321,4 +330,4 @@ print('Loaded dataB: ', dataB.shape)
 # save as compressed numpy array
 filename = 'horse2zebra_256.npz'
 savez_compressed(filename, dataA, dataB)
-print('Saved dataset: ', filename)""""
+print('Saved dataset: ', filename)"""
