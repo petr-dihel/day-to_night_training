@@ -184,7 +184,7 @@ class BinaryTree:
 #video_files_name = load_saved_data()
 
 binary_tree = BinaryTree()
-file = r"C:\Users\Petr\Desktop\prepare_training_data\output\test\log_gps.txt"
+file = r"C:\Users\Petr\Desktop\prepare_training_data\output\test\test\log_gps.txt"
 print("Loading from file {0}".format(file))
 binary_tree.load_from_file(file)
 print("\nDone loading\n")
@@ -200,11 +200,8 @@ current_count = 0
 for node in binary_tree.nodes:
     if float(node.east) < 10 or float(node.north) < 10:
         continue
-    #print(node.hashValue)
     current_count += 1
     searchedHashValue = node.get_opposite_hash_value()
-    #print(searchedHashValue)
-    ##print(hex(searchedHashValue))
     opossiteNode = binary_tree.getNodeByHashValue(searchedHashValue)
     if opossiteNode != False:
         newPairedImage = PairedImage()
@@ -231,12 +228,12 @@ if len(pairedImages) == 0:
     sys.end()
 
 test = pairedImages[0]
-index = 168
+index = 0
 saved = 0
 failedGps = 0
 frameNoneError = 0
 
-while saved < 50:
+while saved < 250:
     test = pairedImages[index]
     while float(test.node_day.east) < 10 or float(test.node_day.north) < 10:
         index += 1
@@ -245,7 +242,7 @@ while saved < 50:
         test = pairedImages[index]
         failedGps += 1
         continue
-    path_to_video = r"G:\car_videos\output"
+
     path_to_video = r"G:\car_videos\input\CARDV_20181212"
 
     video_file_name_1 = test.node_day.videoFileName
@@ -269,9 +266,16 @@ while saved < 50:
         frameNoneError += 1
         continue
     img2 = frame2[1].copy()
+
+    # @todo me, if mean of mages is to small than continue
+    #mean1 = img1.mean()
+    #mean2 = img2.mean()
+    #if abs(mean1 - mean2) < 20:
+    #   del d[key]
+
     result_im = hconcat_resize_min([img1, img2])
     # cv2.imshow("Test2", frame2[1])
-    img_path = r"C:\Users\Petr\Desktop\prepare_training_data\output\\"
+    img_path = r"C:\Users\Petr\Desktop\prepare_training_data\output\result_images\\"
     image_name = "test{0}.jpg".format(saved)
     cv2.imwrite(img_path + image_name, result_im)
     #cv2.imwrite(img_path + "Test2.png", frame2[1])
@@ -281,7 +285,7 @@ while saved < 50:
     print("Night : Is day {0} is Front : {1} videoFileName {2} east: {3} north: {4}"
           .format(test.node_night.isDay, test.node_night.isFrontView, test.node_night.videoFileName, test.node_night.east, test.node_night.north))
     print(index)
-    index += int((len(pairedImages)/51))
+    index += int((len(pairedImages)/300))
     saved += 1
 print("failedGps{0}".format(failedGps))
 print("frameNoneError{0}".format(frameNoneError))
@@ -302,7 +306,7 @@ print("Day: hash {0} opposite {1}".format(test.node_night.hashValue, test.node_n
 
 
 # for newPairedImage in pairedImages:
-# todo preapre datasets and save
+# todo prepare datasets and save
 
 """"
 def load_images(path, size=(256,256)):
