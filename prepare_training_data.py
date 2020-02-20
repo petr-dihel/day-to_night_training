@@ -59,6 +59,17 @@ def get_gps_location(img, is_front_view):
     return gps_location_string
 
 
+def is_day_from_image_2(image):
+    width, heigth, channels = image.shape
+    image = cv2.resize(image, (int(heigth/2), int(width/2)))
+    width, heigth, channels = image.shape
+    img = get_cropped_image(image, 0, 0, int(heigth), int(width/3))
+    avg = np.mean(img)
+    if avg > 78 :
+        return True
+    return False
+
+
 def is_day_from_image(image):
     cropped_image = get_cropped_image(image, 235, 1020, 345, 1060)
     black_and_white_image = get_black_and_white_image(cropped_image)
@@ -237,7 +248,7 @@ class PrepareTrainingData:
                     self.current_frame_count += 1
                     if is_day_inited == False:
                         try:
-                            is_day = is_day_from_image(frame_copy)
+                            is_day = is_day_from_image_2(frame_copy)
                             if is_day:
                                 day_time_string = "D"
                             is_day_inited = True
@@ -337,6 +348,4 @@ except Exception as ex:
     print('Line {0}'.format(ex.with_traceback()))
 finally:
     prepareTrainingData.log_stats()
-
-
 
