@@ -339,13 +339,15 @@ else:
     tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 pytesseract.pytesseract.tesseract_cmd = tesseract_cmd
 prepareTrainingData = PrepareTrainingData(output_logs_file_path, tesseract_cmd, output_video_path)
-prepareTrainingData.init_video_dictionaries(input_videos_path, "CARDV_20181212")
+prepareTrainingData.init_video_dictionaries(input_videos_path)
 try:
-    prepareTrainingData.run("CARDV_20181212")
+    prepareTrainingData.run()
 
 except Exception as ex:
     print('Exception {0}'.format(ex))
     print('Line {0}'.format(ex.with_traceback()))
 finally:
     prepareTrainingData.log_stats()
+
+
 
